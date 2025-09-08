@@ -20,7 +20,7 @@ const options = {
       },
     },
   },
-  apis: ['./server.js'], // sesuaikan dengan nama file route utama
+  apis: ['./server.js'], 
 };
 
 const specs = swaggerJsdoc(options);
