@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("./db"); 
 const jwt = require("jsonwebtoken");
+const setupSwagger = require('./swagger');
 
 const app = express();
 const PORT = 3000;
@@ -8,13 +9,47 @@ const SECRET_KEY = "key";
 
 app.use(express.json());
 
+setupSwagger(app);
 
 
+ /**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Login user
+ *     description: Login menggunakan username dan password, mengembalikan JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: admin
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login berhasil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *       401:
+ *         description: Username atau password salah
+ */
 app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    // cari user
     const result = await pool.query(
       "SELECT * FROM tbl_user WHERE username = $1 AND password = $2",
       [username, password]
@@ -50,6 +85,42 @@ function authenticateToken(req, res, next) {
   });
 }
 
+/**
+ * @swagger
+ * /menus:
+ *   get:
+ *     summary: Ambil menu user
+ *     description: Mengambil menu yang sesuai role user (JWT auth diperlukan)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List menu
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   menu:
+ *                     type: object
+ *                     properties:
+ *                       menu_id:
+ *                         type: integer
+ *                       menu_name:
+ *                         type: string
+ *                       parent_id:
+ *                         type: integer
+ *                       url:
+ *                         type: string
+ *                       sort_order:
+ *                         type: integer
+ *                   children:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ */
 app.get("/menus", authenticateToken, async (req, res) => {
   try {
     const username = req.user.username; 
