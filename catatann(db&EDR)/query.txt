@@ -1,0 +1,83 @@
+CREATE TABLE tbl_user (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(150) NOT NULL
+);
+
+
+CREATE TABLE tbl_role (
+    role_id SERIAL PRIMARY KEY,
+    role_name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE user_role (
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    PRIMARY KEY (user_id, role_id)
+);
+
+CREATE TABLE tbl_menu (
+    menu_id SERIAL PRIMARY KEY,
+    menu_name VARCHAR(100) NOT NULL,
+    parent_id INT NULL,
+    url VARCHAR(255),
+    sort_order INT DEFAULT 0
+);
+
+
+CREATE TABLE role_menu (
+    role_id INT NOT NULL,
+    menu_id INT NOT NULL,
+    PRIMARY KEY (role_id, menu_id)
+);
+
+INSERT INTO tbl_role (role_name, description)
+VALUES 
+('Admin', 'Administrator'),
+('User', 'User');
+
+INSERT INTO tbl_user (username, password, full_name)
+VALUES
+('wahid', '123456', 'Abdul Wahid');
+
+
+INSERT INTO tbl_menu (menu_name, parent_id, url, sort_order)
+VALUES
+('Menu 1', NULL, '/menu1', 1),
+('Menu 1.1', 1, '/menu1.1', 1),
+('Menu 1.2', 1, '/menu1.2', 2),
+('Menu 2', NULL, '/menu2', 2),
+('Menu 3', NULL, '/menu3', 3);
+
+INSERT INTO role_menu (role_id, menu_id)
+VALUES
+(1, 1),
+(1, 2),
+(2, 4);
+
+INSERT INTO user_role (user_id, role_id)
+VALUES
+(1, 1),
+(1, 2);
+
+
+select 
+	m.menu_id,
+	m.menu_name,
+	m.parent_id,
+	m.url,
+	m.sort_order
+from
+	tbl_user u
+join user_role ur on
+	u.user_id = ur.user_id
+join role_menu rm on
+	ur.role_id = rm.role_id
+join tbl_menu m on
+	rm.menu_id = m.menu_id
+order by
+	m.parent_id,
+	m.sort_order;
+

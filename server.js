@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const app = express();
 const PORT = 3000;
-const SECRET_KEY = "rahasia_sederhana"; 
+const SECRET_KEY = "key"; 
 
 app.use(express.json());
 
@@ -50,19 +50,12 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// GET menu by user (butuh login)
 app.get("/menus", authenticateToken, async (req, res) => {
   try {
-    const username = req.user.username; // dari token JWT
+    const username = req.user.username; 
 
     const result = await pool.query(
-      `SELECT m.menu_id, m.menu_name, m.parent_id, m.url, m.sort_order
-       FROM tbl_user u
-       JOIN user_role ur ON u.user_id = ur.user_id
-       JOIN role_menu rm ON ur.role_id = rm.role_id
-       JOIN tbl_menu m ON rm.menu_id = m.menu_id
-       WHERE u.username = $1
-       ORDER BY m.parent_id, m.sort_order`,
+      "SELECT m.menu_id, m.menu_name, m.parent_id, m.url, m.sort_order FROM tbl_user u JOIN user_role ur ON u.user_id = ur.user_id JOIN role_menu rm ON ur.role_id = rm.role_id JOIN tbl_menu m ON rm.menu_id = m.menu_id WHERE u.username = $1 ORDER BY m.parent_id, m.sort_order",
       [username]
     );
 
@@ -79,7 +72,7 @@ function buildMenuTree(menus, parentId = null) {
   return menus
     .filter(menu => menu.parent_id === parentId)
     .map(menu => ({
-      ...menu,
+      menu,
       children: buildMenuTree(menus, menu.menu_id)
     }));
 }
